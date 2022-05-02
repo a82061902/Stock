@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{../../lib/layui-v2.6.3/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{../../css/layuimini.css?v=2.0.4.2}" media="all">
+    <link rel="stylesheet" th:href="@{../../css/themes/default.css}" media="all">
+    <link rel="stylesheet" th:href="@{../../lib/font-awesome-4.7.0/css/font-awesome.min.css}" media="all">
+    <style>
+
+        .div-content{
+            background-color: #FFFFFF;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .table-search-fieldset{
+            margin: 0;
+            border: 1px solid #e6e6e6;
+            padding: 10px 20px 5px 20px;
+            color: #6b6b6b;
+        }
+        
+    </style>
+</head>
+<body>
+<div class="div-content">
+    <fieldset class="table-search-fieldset">
+        <legend>货物出库</legend>
+        <form class="layui-form" action="" th:object="${goods}">
+            <div class="layui-form-item">
+                <label class="layui-form-label">货物编号</label>
+                <div class="layui-input-block">
+                    <!--thymeleaf数据回显-->
+                    <input type="text"  th:field="*{goodsId}" id="goodsId" required="required" lay-verify="required" placeholder="请输入货物编号" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">货物名称</label>
+                <div class="layui-input-block">
+                    <input type="text"  th:field="*{name}" id="name" required="required" lay-verify="required" placeholder="请输入货物名称" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">货物数量</label>
+                <div class="layui-input-block">
+                    <input type="text" th:field="*{count}" id="count" required="required" lay-verify="required|number" placeholder="请输入货物数量" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <!--验证：货物数量必须为正整数-->
+            <script>
+                const myInput = document.getElementById('count')
+                myInput.onkeyup=function () {
+                    this.value=this.value.match(/^[1-9]{1}[0-9]*$/)
+                }
+            </script>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">客户名称</label>
+                <div class="layui-input-block">
+                    <select lay-filter="required" id="customerName">
+                        <option value="">请选择</option>
+                        <!--span与option不在一行会出现空格问题-->
+                        <option th:each="customer:${customerList}" th:value="${customer.customerName}"><span th:text="${customer.customerName}"></span></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">供应商名称</label>
+                <div class="layui-input-block">
+                    <select th:field="*{supplierName}" id="supplierName" lay-filter="required" disabled>
+                        <option th:each="supplier:${supplierList}" th:value="${supplier.supplierName}"><span th:text="${supplier.supplierName}"></span></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">出库日期</label>
+                <div class="layui-input-block">
+                    <input type="text" name="outTime" required lay-verify="required" placeholder="请输入出库日期" autocomplete="off" class="layui-input" id="outTimeDate">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="btn-submit-filter">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </fieldset>
+</div>
+
+
+<script th:src="@{../../jquery/jquery-3.5.1.min.js}" charset="UTF-8"></script>
+<script th:src="@{../../lib/layui-v2.6.3/layui.js}" charSet="utf-8"></script>
+<script th:inline="javascript">
+    var ctxPath=[[@{/}]];
+       
+    layui.use(['laydate','form'], function(){
+        var laydate = layui.laydate;
+        var form = layui.form;
+        var $ = layui.$; //jquery
+        var now = new Date();
+
+        //执行laydate实例
+        laydate.render({
+            elem: '#outTimeDate'
+            ,format:'yyyy-MM-dd HH:mm:ss'
+            ,ready: function(){ //获取时分秒
+                this.dateTime.hours=now.getHours();
+                this.dateTime.minutes=now.getMinutes();
+                this.dateTime.seconds=now.getSeconds();
+            }
+        });
+
+        //表单提交
+        form.on('submit(btn-submit-filter)', function(data){
+            $("#btn-submit").attr("disabled","disabled").addClass("layui-btn-disabled");
+            var url=ctxPath +"goods/editGoods";
+            var customerName=$("#customerName option:selected").text();
+            var supplierName=$("#supplierName option:selected").text();
+            var outTime=$("#outTimeDate").val();
+            var goodsId=$("#goodsId").val();
+            var name=$("#name").val();
+            var count=$("#count").val();
+            
+            $.post(url,{"supplierName":supplierName, "customerName":customerName, "outTime":outTime, "goodsId":goodsId, "name":name, "count":count}, function (response){
+                //成功或失败提示
+                if(response.code==0){
+                    // 弹出层msg提示
+                    layer.msg('出库成功', {
+                        icon: 1,
+                        time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                    }, function(){
+                        //刷新表格
+                        parent.refreshTable();
+                        // 关闭窗口
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index); //再执行关闭
+                    });
+                }else {
+                    layer.alert(response.message, {
+                        icon: 2,
+                        time: 2000,
+                        anim: 6
+                    }, function(){
+                        //do something
+                    });
+                }
+            })
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        })
+    });
+
+</script>
+</body>
+</html>

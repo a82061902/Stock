@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{lib/layui-v2.6.3/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{css/layuimini.css?v=2.0.4.2}" media="all">
+    <link rel="stylesheet" th:href="@{css/themes/default.css}" media="all">
+    <link rel="stylesheet" th:href="@{lib/font-awesome-4.7.0/css/font-awesome.min.css}" media="all">
+    <style>
+
+        .div-content{
+            background-color: #FFFFFF;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .table-search-fieldset{
+            margin: 0;
+            border: 1px solid #e6e6e6;
+            padding: 10px 20px 5px 20px;
+            color: #6b6b6b;
+        }
+    </style>
+</head>
+<body>
+<div class="div-content">
+    <form class="layui-form layui-form-pane" id="form-search" action="">
+        <fieldset class="table-search-fieldset">
+            <legend>搜索条件</legend>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">出库单号</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="orderId" autocomplete="off" class="layui-input">
+                    </div>
+                    
+                    <label class="layui-form-label">货物编码</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="goodsId" autocomplete="off" class="layui-input">
+                    </div>
+                    
+                    <label class="layui-form-label">货物名称</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="name" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                
+                <!--日期-->
+                <div class="layui-inline">
+                    <label class="layui-form-label">范围</label>
+                    <div class="layui-input-inline" style="width: 140px;">
+                        <input type="text" name="startTime" placeholder="请输入起始时间" autocomplete="off" id="date1" class="layui-input date">
+                    </div>
+                    <div class="layui-form-mid">-</div>
+                    <div class="layui-input-inline" style="width: 140px;">
+                        <input type="text" name="endTime" placeholder="请输入结束时间" autocomplete="off" id="date2" class="layui-input date">
+                    </div>
+                </div>
+                
+                <!-- 按钮 -->
+                <div class="layui-inline">
+                    <button id="btn-search" lay-submit lay-filter="btn-search-shipment" type="button" class="layui-btn layui-btn-normal">
+                        <!-- 图标 -->
+                        <i class="layui-icon layui-icon-search"></i>
+                        搜索
+                    </button>
+                </div>
+                
+                <div class="layui-inline">
+                    <button id="btn-reset"  type="reset" class="layui-btn layui-btn-normal">
+                        <!-- 图标 -->
+                        <i class="layui-icon layui-icon-fonts-clear"></i>
+                        清空
+                    </button>
+                </div>
+            
+            </div>
+        </fieldset>
+    </form>
+    <!--通过script渲染表格样式-->
+    <table id="table-shipment" lay-filter="table-shipment-filter"></table>
+</div>
+
+<!--头工具栏-->
+<script type="text/html" id="shipment-toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="delete">批量删除</button>
+    </div>
+</script>
+
+<!--绑定工具条-->
+<script type="text/html" id="column-shipment-toolbar">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<!--jquery-->
+<script th:src="@{jquery/jquery-3.5.1.min.js}" charset="UTF-8"></script>
+<!--日期控件实现-->
+<script th:src="@{lib/layui-v2.6.3/layui.js}" charset="utf-8"></script>
+<!--加载组件-->
+<script th:inline="javascript">
+    <!--刷新表格-->
+    function refreshTable(){
+        $("#btn-reset").click();
+        $("#btn-search").click();
+    }
+
+    var ctxPath=[[@{/}]];
+
+        //监听表单提交
+        layui.use(['laydate','table','form'], function() {
+            var laydate = layui.laydate;
+            var table = layui.table;
+            var form=layui.form;
+
+            //执行laydate实例
+            laydate.render({
+                elem: '#date1'
+                ,format:'yyyy-MM-dd'
+            });
+            laydate.render({
+                elem: '#date2'
+                ,format:'yyyy-MM-dd'
+            });
+
+
+
+            //货物表渲染
+            table.render({
+                elem: '#table-shipment'
+                , url: ctxPath + 'shipment/getShipments' //数据接口
+                , toolbar: '#shipment-toolbar'
+                , page: true //开启分页
+                , limits: [10, 15, 20, 25, 50, 100]
+                , cols: [[ //表头
+                    {type: 'checkbox', width: 100}
+                    , {field: 'orderId', title: '出库单号', width: 200, sort: true}
+                    , {field: 'goodsId', title: '货物编码', width: 140, sort: true}
+                    , {field: 'name', title: '货物名称', width: 177,  align: 'left'}
+                    , {field: 'count', title: '数量', width: 120, sort: true}
+                    , {field: 'outTime', title: '出库日期', width: 177, sort: true}
+                    , {field: 'customerName', title: '客户名称', width: 177}
+                    //,{type: 'checkbox', width: 100}
+                    , {unresize: true, title: '操作', width: 116, toolbar: '#column-shipment-toolbar'}
+                ]]
+            });
+
+            //监听表单提交
+            form.on('submit(btn-search-shipment)', function(data){
+                //刷新表格
+                table.reload('table-shipment', {
+                    where: {
+                        orderId: data.field.orderId,
+                        goodsId: data.field.goodsId,
+                        name: data.field.name,
+                        startTime: data.field.startTime,
+                        endTime: data.field.endTime
+                    }
+                    ,page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                }); //只重载数据
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            table.on('toolbar(table-shipment-filter)', function(obj) {
+                if (obj.event == 'delete') {
+                    var checkStatus = table.checkStatus('table-shipment')
+                    // 没有选中
+                    if(checkStatus.data.length==0){
+                        layer.alert('没有选中任何数据',{icon:2, anim:6, time:1500, title:"警告"});
+                        return false;
+                    }
+
+                    // 将选项的值传递给数组
+                    var idArr=new Array();
+                    $(checkStatus.data).each(function(){
+                        idArr.push(this.orderId);
+                    });
+
+                    // 异步请求删除数据并刷新表格
+                    layer.confirm('确认删除?', {icon: 3, title:'提示'}, function(index){
+                        var url=ctxPath+"shipment/deleteShipmentByOrderIds/"+idArr.join(",");
+                        var params={
+                            _method:"DELETE"
+                        }
+                        $.post(url, params, function (response){
+                            if(response.code == 0){
+                                layer.msg(response.message, {icon: 1});
+                                refreshTable();
+                            }else{
+                                layer.msg(response.message, {icon: 2, anim: 6});
+                            }
+                        });
+
+                        layer.close(index);
+                    });
+                }
+            });
+
+            // 删除一行数据
+            table.on('tool(table-shipment-filter)', function(obj){
+                var data = obj.data; //获得当前行数据
+                var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                if(layEvent=='del'){
+                    // 异步请求删除数据并刷新表格
+                    layer.confirm('确认删除该条记录（出库单号：'+data.orderId+"）?", {icon: 3, title:'提示'}, function(index){
+                        var url=ctxPath+"shipment/deleteshipmentByOrderIds/"+data.orderId;
+                        var params={
+                            _method:"DELETE"
+                        }
+                        $.post(url, params, function (response){
+                            if(response.code == 0){
+                                layer.msg(response.message, {icon: 1});
+                                refreshTable();
+                            }else{
+                                layer.msg(response.message, {icon: 2, anim: 6});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                }
+            });
+
+        });
+</script>
+</body>
+</html>

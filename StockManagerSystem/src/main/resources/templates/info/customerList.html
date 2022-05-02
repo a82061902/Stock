@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{../lib/layui-v2.6.3/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{../css/layuimini.css?v=2.0.4.2}" media="all">
+    <link rel="stylesheet" th:href="@{../css/themes/default.css}" media="all">
+    <link rel="stylesheet" th:href="@{../lib/font-awesome-4.7.0/css/font-awesome.min.css}" media="all">
+    <style>
+
+        .div-content{
+            background-color: #FFFFFF;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .table-search-fieldset{
+            margin: 0;
+            border: 1px solid #e6e6e6;
+            padding: 10px 20px 5px 20px;
+            color: #6b6b6b;
+        }
+    </style>
+</head>
+<body>
+<div class="div-content">
+    <form class="layui-form layui-form-pane" id="form-search" action="">
+        <fieldset class="table-search-fieldset">
+            <legend>搜索条件</legend>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">客户名称</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="customerName" autocomplete="off" class="layui-input">
+                    </div>
+                    
+                    <label class="layui-form-label">联系号码</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="customerPhone" autocomplete="off" class="layui-input">
+                    </div>
+                    
+                    <label class="layui-form-label">邮箱地址</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="customerEmail" autocomplete="off" class="layui-input">
+                    </div>
+                    
+                    <label class="layui-form-label">客户地址</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="customerAddress" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                
+                <!-- 按钮 -->
+                <div class="layui-inline">
+                    <button id="btn-search" lay-submit lay-filter="btn-search-customer" type="button" class="layui-btn layui-btn-normal">
+                        <!-- 图标 -->
+                        <i class="layui-icon layui-icon-search"></i>
+                        搜索
+                    </button>
+                </div>
+                
+                <div class="layui-inline">
+                    <button id="btn-reset"  type="reset" class="layui-btn layui-btn-normal">
+                        <!-- 图标 -->
+                        <i class="layui-icon layui-icon-fonts-clear"></i>
+                        清空
+                    </button>
+                </div>
+            
+            </div>
+        </fieldset>
+    </form>
+    
+    <!--通过script渲染表格样式-->
+    <table id="table-customer" lay-filter="table-customer-filter"></table>
+</div>
+
+<!--头工具栏-->
+<script type="text/html" id="customer-toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">增加</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="delete">批量删除</button>
+    </div>
+</script>
+
+<!--绑定工具条-->
+<script type="text/html" id="column-customer-toolbar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<!--注意路径是否正确，否则相应的页面效果就无法实现-->
+<!--jquery-->
+<script th:src="@{../jquery/jquery-3.5.1.min.js}" charset="UTF-8"></script>
+<!--日期控件实现-->
+<script th:src="@{../lib/layui-v2.6.3/layui.js}" charset="utf-8"></script>
+<!--加载组件-->
+<script th:inline="javascript">
+    <!--刷新表格-->
+    function refreshTable(){
+        $("#btn-reset").click();
+        $("#btn-search").click();
+    }
+
+    var ctxPath=[[@{/}]];
+
+        //导入用到的组件
+        layui.use(['table','form'], function(){
+            var table=layui.table;
+            var form=layui.form;
+
+            //货物表渲染
+            table.render({
+                elem: '#table-customer'
+                // ,height: 480
+                ,url: ctxPath+'info/getCustomer' //数据接口
+                ,toolbar: '#customer-toolbar'
+                ,page: true //开启分页
+                ,limits: [10,15,20,25,50,100]
+                ,cols: [[ //表头
+                    {type: 'checkbox', width: 100}
+                    ,{field: 'customerName', title: '客户名称', width:177, sort: true}
+                    ,{field: 'customerPhone', title: '联系号码', width:140}
+                    ,{field: 'customerEmail', title: '邮箱地址', width:177}
+                    ,{field: 'customerAddress', title: '客户地址', width:120, sort: true, align:'left'}
+                    ,{unresize:true, title: '操作', width:116, toolbar: '#column-customer-toolbar'}
+                ]]
+            });
+
+            //监听表单提交
+            form.on('submit(btn-search-customer)', function(data){
+                //刷新表格
+                table.reload('table-customer', {
+                    where: { //设定异步数据接口的额外参数，任意设
+                        customerName: data.field.customerName,
+                        customerPhone: data.field.customerPhone,
+                        customerEmail: data.field.customerEmail,
+                        customerAddress: data.field.customerAddress
+                    }
+                    ,page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                }); //只重载数据
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            // 触发表格头部工具栏事件
+            table.on('toolbar(table-customer-filter)', function(obj){
+                if(obj.event=='add'){
+                    // 弹出层
+                    layer.open({
+                        type: 2,
+                        title: "添加客户",
+                        area: ['100%','100%'],
+                        content: ctxPath+'info/addCustomerUI'
+                    });
+                }
+                else if(obj.event=='delete'){ //删除所选项
+                    var checkStatus = table.checkStatus('table-customer')
+                    // 没有选中
+                    if(checkStatus.data.length==0){
+                        layer.alert('没有选中任何数据',{icon:2, anim:6, time:1500, title:"警告"});
+                        return false;
+                    }
+
+                    // 将选项的值传递给数组
+                    var idArr=new Array();
+                    $(checkStatus.data).each(function(){
+                        idArr.push(this.customerName);
+                    });
+
+
+                    // 异步请求删除数据并刷新表格
+                    layer.confirm('确认删除?', {icon: 3, title:'提示'}, function(index){
+                        var url=ctxPath+"info/deleteCustomerByCustomerNames/"+idArr.join(",");
+                        var params={
+                            _method:"DELETE"
+                        }
+
+                        $.post(url, params,function (response){
+                            if(response.code == 0){
+                                layer.msg(response.message, {icon: 1});
+                                refreshTable();
+                            }else{
+                                layer.alert(response.message, {icon: 2, anim: 6});
+                            }
+                        });
+
+                        layer.close(index);
+                    });
+                }
+            });
+
+            // 监听操作列：编辑 删除
+            table.on('tool(table-customer-filter)', function(obj){
+                var data = obj.data; //获得当前行数据
+                var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+                if(layEvent=='del'){
+                    // 异步请求删除数据并刷新表格
+                    layer.confirm('确认删除该客户“'+data.customerName+"”?", {icon: 3, title:'提示'}, function(index){
+                        var url=ctxPath+"info/deleteCustomerByParam";
+                        var params={
+                            _method:"DELETE"
+                        }
+
+                        var customerName= data.customerName;
+                        var customerPhone= data.customerPhone;
+                        var customerEmail= data.customerEmail;
+                        var customerAddress= data.customerAddress;
+
+                        $.post(url,  {"customerName":customerName,"customerPhone":customerPhone, "customerEmail":customerEmail, "customerAddress":customerAddress} , function (response){
+                            if(response.code == 0){
+                                layer.msg(response.message, {icon: 1});
+                                refreshTable();
+                            }else{
+                                layer.msg(response.message, {icon: 2, anim: 6});
+                            }
+                        });
+
+                        layer.close(index);
+                    });
+                    // 否则为编辑按钮
+                }else if(layEvent=='edit'){
+                    layer.open({
+                        type: 2,
+                        title: "资料编辑",
+                        area: ['100%','100%'],
+                        content: ctxPath+'info/customer/' + data.customerName +"/"+data.customerPhone +"/"+data.customerEmail +"/"+data.customerAddress
+                    });
+                }
+
+            });
+
+
+        });
+</script>
+</body>
+</html>

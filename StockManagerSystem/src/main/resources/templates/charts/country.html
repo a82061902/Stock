@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+
+<body>
+<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+<div id="main" style="width: 1536px;height:864px;"></div>
+<script th:src="@{../jquery/jquery-3.5.1.min.js}" charset="UTF-8"></script>
+<script th:src="@{../echarts/echarts.js}" charset="UTF-8"></script>
+<script type="text/javascript" th:inline="javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+    var year0=[[${year0.year}]];
+    var year1=[[${year1.year}]];
+    var year2=[[${year2.year}]];
+    var year3=[[${year3.year}]];
+    // 指定图表的配置项和数据
+    var yearlist = [ '[[${year0.year}]]', '[[${year1.year}]]','[[${year2.year}]]','[[${year3.year}]]']; //这个不能直接用thymeleaf表达式获取对象属性
+    var monthList = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    var option = {
+        timeline:{ //提供了在多个 ECharts option 间进行切换、播放等操作的功能。
+            axisType: 'category', //轴的类型
+            autoPlay: false,
+            playInterval: 1500, //ms
+            data: yearlist,
+            label:{
+                fontSize: 18
+            }
+        },
+        baseOption:{ //baseOption是个基本框架，数据的固定部分一般都写在这个框架中
+            dataset:{
+                source:[
+                    ['year','January','February','March','April','May','June','July','August','September','October','November','December'],
+                    [ '[[${year0.year}]]',[[${year0.January}]],[[${year0.February}]],[[${year0.March}]],[[${year0.April}]],[[${year0.May}]],[[${year0.June}]],
+                        [[${year0.July}]],[[${year0.August}]],[[${year0.September}]],[[${year0.October}]],[[${year0.November}]],[[${year0.December}]]],
+                    [ '[[${year1.year}]]',[[${year1.January}]],[[${year1.February}]],[[${year1.March}]],[[${year1.April}]],[[${year1.May}]],[[${year1.June}]],
+                        [[${year1.July}]],[[${year1.August}]],[[${year1.September}]],[[${year1.October}]],[[${year1.November}]],[[${year1.December}]]],
+                    [ '[[${year2.year}]]',[[${year2.January}]],[[${year2.February}]],[[${year2.March}]],[[${year2.April}]],[[${year2.May}]],[[${year2.June}]],
+                        [[${year2.July}]],[[${year2.August}]],[[${year2.September}]],[[${year2.October}]],[[${year2.November}]],[[${year2.December}]]],
+                    [ '[[${year3.year}]]',[[${year3.January}]],[[${year3.February}]],[[${year3.March}]],[[${year3.April}]],[[${year3.May}]],[[${year3.June}]],
+                        [[${year3.July}]],[[${year3.August}]],[[${year3.September}]],[[${year3.October}]],[[${year3.November}]],[[${year3.December}]]]
+
+                ]
+            },
+
+            title: {
+                text: '[[${year0.year}]]货物数量（件）',
+                left: 'center',
+                textStyle:{
+                    fontSize:24
+                }
+            },
+            tooltip: { // 提示框组件，用于配置鼠标滑过或点击图表时的显示框。
+                trigger: 'axis' // 触发类型  'item'图形触发：散点图，饼图等无类目轴的图表中使用； 'axis'坐标轴触发；'none'：什么都不触发
+            },
+            toolbox: { //在 ECharts 图表的工具栏（toolbox）中，有五个内置的工具，分别是：导出图片，数据视图，动态类型切换，数据区域缩放以及配置项还原，这五个工具的配置在 feature 属性中实现配置。
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+            legend: { //用以调节图例位置
+            },
+            grid: { //直角坐标系内绘图网格
+                left: '10%', //图表离容器左侧的距离
+                // bottom: '15%', //图表离容器右侧的距离
+                containLabel: true //grid 区域是否包含坐标轴的刻度标签
+            },
+            xAxis: [
+                {
+                    type:'category',
+                    data: monthList,
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+
+                    axisLabel: {
+                        formatter: function (value) { //刻度标签的内容格式器，支持字符串模板和回调函数两种形式。使用函数模板，函数参数为刻度数值（类目）
+                            return  value;
+                        },
+                        margin: 20,
+                        rich: { // formatter 都支持富文本，所以可以做成一些复杂的效果
+                            value: {
+                                lineHeight: 30,
+                                fontSize: 18,
+                                align: 'center'
+                            },
+                            January: {
+                                height: 40,
+                                align: 'center',
+                            },
+                            February: {
+                                height: 40,
+                                align: 'center',
+                            },
+                            March: {
+                                height: 40,
+                                align: 'center',
+                            },
+                            April: {
+                                height: 40,
+                                align: 'center',
+                            },
+                            May: {
+                                height: 40,
+                                align: 'center',
+                            },
+                            June: {
+                                height: 40,
+                                align: 'center',
+                            },
+                            July: {
+                                height: 40,
+                                align: 'center',
+                            },
+                            April: {
+                                height: 40,
+                                align: 'center',
+                            },
+                            September: {
+                                height: 40,
+                                align: 'center',
+                            },
+                            October: {
+                                height: 40,
+                                align: 'center',
+                            },
+                            November: {
+                                height: 40,
+                                align: 'center',
+                            },
+                            December: {
+                                height: 40,
+                                align: 'center',
+                            },
+                        }
+                    }
+
+                },
+            ],
+            yAxis:[
+                {
+                    name:'货物数量（件）',
+                    type:'value',
+                    nameTextStyle:{
+                        fontSize:18
+                    },
+                    axisLabel:{
+                        fontSize:18
+                    }
+                },
+            ],
+            series: [ //系列列表。每个系列通过 type 决定自己的图表类型，这里是柱状图‘bar’
+                {
+                    //name: 'GDP',
+                    type: 'bar',
+                    seriesLayoutBy: 'row', //指定了 dataset 中用行还是列对应到系列上，也就是说，系列“排布”到 dataset 的行还是列上
+                    encode:{ //将对应的数据映射到坐标轴（如 X、Y 轴）
+                        x:'year',
+                        y: '[[${year0.year}]]'
+                    }
+                },
+            ]
+        },
+        options:[] //options里面装的就是变化的数据
+    };
+
+    for (var n = 0; n<yearlist.length; n++){
+        //window.alert(yearlist[n]);
+        option.options.push({
+            title:{
+                show:true,
+                text:yearlist[n]+'年货物数量（件）',
+                left: 'center',
+                textStyle:{
+                    fontSize:24
+                }
+            },
+            series:[
+                {
+                    type: 'bar',
+                    seriesLayoutBy: 'row',
+                    encode:{
+                        x:'year',
+                        y:yearlist[n]
+                    }
+                },
+            ]
+        });
+    }
+
+    // 使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+    
+/*    $.ajax({
+        url: "/charts/getCountry",
+        success:function (data){
+            window.alert(data.year1998.March);
+            myChart.setOption({
+                dataset: {source: data.year1998}
+            });
+        }
+    });*/
+</script>
+</body>
+</html>
