@@ -1,0 +1,57 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.csw.mapper.CustomerMapper">
+    <select id="getAllCustomer" resultType="com.csw.entity.Customer">
+        SELECT * FROM customer
+    </select>
+
+    <select id="getCustomerByParam" parameterType="com.csw.common.vo.CustomerQuery" resultType="com.csw.entity.Customer">
+        SELECT * FROM stockmanager.customer
+        <where>
+            <if test="customerName != null">
+                and customerName like '%' #{customerName} '%'
+            </if>
+            <if test="customerPhone != null">
+                and customerPhone like '%' #{customerPhone} '%'
+            </if>
+            <if test="customerEmail != null">
+                and customerEmail like '%' #{customerEmail} '%'
+            </if>
+            <if test="customerAddress != null">
+                and customerAddress like '%' #{customerAddress} '%'
+            </if>
+        </where>
+        <if test="oldCustomerName ==null">
+            limit #{start},#{limit}
+        </if>
+    </select>
+
+    <select id="getCounts" resultType="java.lang.Long">
+        SELECT count(1) FROM stockmanager.customer
+    </select>
+
+    <insert id="addCustomer" parameterType="com.csw.entity.Customer">
+        INSERT INTO stockmanager.customer (customerName, customerPhone, customerEmail, customerAddress)
+        VALUES (#{customerName}, #{customerPhone}, #{customerEmail}, #{customerAddress})
+    </insert>
+
+    <delete id="deleteCustomerByCustomerNames">
+        DELETE FROM stockmanager.customer
+        WHERE customerName
+        IN
+        <foreach  collection="array" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <update id="updateCustomer" parameterType="com.csw.common.vo.CustomerQuery">
+        UPDATE stockmanager.customer
+        SET customerName=#{customerName}, customerPhone=#{customerPhone}, customerEmail=#{customerEmail}, customerAddress=#{customerAddress}
+        WHERE customerName=#{oldCustomerName} and customerPhone=#{oldCustomerPhone} and customerEmail=#{oldCustomerEmail} and customerAddress=#{oldCustomerAddress}
+    </update>
+
+    <delete id="deleteCustomerByParam" parameterType="com.csw.common.vo.CustomerQuery">
+        DELETE FROM stockmanager.customer
+        WHERE customerName=#{customerName} AND customerPhone=#{customerPhone} AND customerEmail=#{customerEmail} AND customerAddress=#{customerAddress}
+    </delete>
+</mapper>

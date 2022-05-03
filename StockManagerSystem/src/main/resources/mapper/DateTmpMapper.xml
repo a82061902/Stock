@@ -1,0 +1,24 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.csw.mapper.DateTmpMapper">
+    <delete id="deleteAll">
+        DELETE FROM stockmanager.datetmp
+    </delete>
+
+    <insert id="insertPurchase">
+        INSERT INTO datetmp(year,month,count)
+        (SELECT year(inTime) AS year,month(inTime) AS month,SUM(count) AS count FROM purchase GROUP BY year, month ORDER BY year DESC, month)
+    </insert>
+
+    <insert id="insertShipment">
+        INSERT INTO datetmp(year,month,count)
+            (SELECT year(outTime) AS year,month(outTime) AS month,SUM(count) AS count FROM shipment GROUP BY year, month ORDER BY year DESC, month)
+    </insert>
+    
+    <select id="getAllDateTmp" resultType="com.csw.entity.DateTmp">
+        SELECT * FROM stockmanager.datetmp
+    </select>
+    
+    <select id="getDateTmpByYear" parameterType="java.lang.String" resultType="com.csw.entity.DateTmp">
+        SELECT * FROM stackmanger.datetmp WHERE year=#{year}
+    </select>
+</mapper>

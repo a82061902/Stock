@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.csw.mapper.SupplierMapper">
+    <select id="getAllSupplier" resultType="com.csw.entity.Supplier">
+        SELECT * FROM stockmanager.supplier
+    </select>
+
+    <select id="getSupplierByParam" parameterType="com.csw.common.vo.SupplierQuery" resultType="com.csw.entity.Supplier">
+        SELECT * FROM stockmanager.supplier
+        <where>
+            <if test="supplierName != null">
+                and supplierName like '%' #{supplierName} '%'
+            </if>
+            <if test="supplierPhone != null">
+                and supplierPhone like '%' #{supplierPhone} '%'
+            </if>
+            <if test="supplierEmail != null">
+                and supplierEmail like '%' #{supplierEmail} '%'
+            </if>
+            <if test="supplierAddress != null">
+                and supplierAddress like '%' #{supplierAddress} '%'
+            </if>
+        </where>
+        <if test="oldSupplierName ==null">
+            limit #{start},#{limit}
+        </if>
+    </select>
+
+    <select id="getCounts" resultType="java.lang.Long">
+        SELECT count(1) FROM stockmanager.supplier
+    </select>
+
+    <insert id="addSupplier" parameterType="com.csw.entity.Supplier">
+        INSERT INTO stockmanager.supplier (supplierName, supplierPhone, supplierEmail, supplierAddress)
+        VALUES (#{supplierName}, #{supplierPhone}, #{supplierEmail}, #{supplierAddress})
+    </insert>
+
+    <delete id="deleteSupplierBySupplierNames">
+        DELETE FROM stockmanager.supplier
+        WHERE supplierName
+        IN
+        <foreach  collection="array" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <update id="updateSupplier" parameterType="com.csw.common.vo.PurchaseQuery">
+        UPDATE stockmanager.supplier
+        SET supplierName=#{supplierName}, supplierPhone=#{supplierPhone}, supplierEmail=#{supplierEmail}, supplierAddress=#{supplierAddress}
+        WHERE supplierName=#{oldSupplierName} and supplierPhone=#{oldSupplierPhone} and supplierEmail=#{oldSupplierEmail} and supplierAddress=#{oldSupplierAddress}
+    </update>
+
+    <delete id="deleteSupplierByParam" parameterType="com.csw.common.vo.SupplierQuery">
+        DELETE FROM stockmanager.supplier
+        WHERE supplierName=#{supplierName} AND supplierPhone=#{supplierPhone} AND supplierEmail=#{supplierEmail} AND supplierAddress=#{supplierAddress}
+    </delete>
+</mapper>

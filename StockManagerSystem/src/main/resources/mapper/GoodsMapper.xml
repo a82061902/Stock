@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.csw.mapper.GoodsMapper">
+    <select id="getCounts" resultType="java.lang.Long">
+        SELECT count(1) from stockmanager.goods
+    </select>
+
+    <select id="getCountsBySum" resultType="java.lang.Long">
+        SELECT sum(count) from stockmanager.goods
+    </select>
+
+    <select id="getGoodsCountsGroupByName" resultType="com.csw.entity.NameAndCount">
+        SELECT name, SUM(count) AS count FROM goods
+        GROUP BY name
+    </select>
+
+    <insert id="addGoods" parameterType="com.csw.entity.Goods">
+        INSERT INTO stockmanager.goods (goodsId, name, count, supplierName)
+        VALUES (#{goodsId}, #{name}, #{count}, #{supplierName})
+    </insert>
+
+    <update id="updateGoodsByMinus">
+        UPDATE stockmanager.goods A, stockmanager.tmp B
+        SET A.count=A.count-B.count
+        WHERE A.supplierName=B.supplierName AND A.goodsId=B.goodsId
+    </update>
+
+    <update id="updateGoodsByPlus">
+        UPDATE stockmanager.goods A, stockmanager.tmp B
+        SET A.count=A.count+B.count
+        WHERE A.supplierName=B.supplierName AND A.goodsId=B.goodsId
+    </update>
+
+    <select id="getGoodsByParam" parameterType="com.csw.common.vo.GoodsQuery" resultType="com.csw.entity.Goods">
+        SELECT * FROM stockmanager.goods
+        <where>
+            <if test="goodsId != null">
+               and goodsId like '%' #{goodsId} '%'
+            </if>
+            <if test="name != null">
+               and name like '%' #{name} '%'
+            </if>
+        </where>
+        limit #{start},#{limit}
+    </select>
+
+    <select id="getGoodsByIdAndSupplierName" parameterType="java.lang.String" resultType="com.csw.entity.Goods">
+        SELECT * FROM stockmanager.goods
+        WHERE goodsId=#{goodsId} AND supplierName=#{supplierName}
+    </select>
+
+    <delete id="deleteGoodsByIds">
+        DELETE FROM stockmanager.goods
+        WHERE goodsId
+        IN 
+        <foreach  collection="array" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <update id="editGoods" parameterType="com.csw.entity.Goods">
+        UPDATE stockmanager.goods
+        SET name=#{name}, count=#{count}, supplierName=#{supplierName}
+        WHERE goodsId=#{goodsId}
+    </update>
+
+</mapper>
